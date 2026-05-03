@@ -2,9 +2,6 @@
 app = "music-practice-loop"
 primary_region = "cdg"
 
-[env]
-  ACCESS_LOG = "1"
-
 [build]
 
 [http_service]
