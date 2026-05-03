@@ -20,6 +20,12 @@ const MAX_PORT_TRIES = IS_CONTAINER ? 1 : 40;
 const LISTEN_HOST = process.env.LISTEN_HOST || "0.0.0.0";
 const ROOT = __dirname;
 
+/** "" | "0" | "1" | "all" — ver comentario al final del archivo. */
+const ACCESS_LOG = String(process.env.ACCESS_LOG || "").toLowerCase();
+
+/** Visitas a la SPA (solo GET con 200); por proceso; en Fly hay varias máquinas. */
+let usagePageViews = 0;
+
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -37,9 +43,55 @@ function safePath(urlPath) {
   return joined;
 }
 
+function isCountedPagePath(urlPath) {
+  return (
+    urlPath === "/" ||
+    urlPath === "/settings/midi" ||
+    urlPath === "/settings/midi/"
+  );
+}
+
+function shouldLogPageViewsOnly() {
+  return ACCESS_LOG === "1" || ACCESS_LOG === "true";
+}
+
+function shouldLogAllGets() {
+  return ACCESS_LOG === "all";
+}
+
 function handleRequest(req, res) {
-  if (req.url === "/api/health") {
-    res.writeHead(200, { "Content-Type": "application/json" });
+  const urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
+  const method = req.method || "GET";
+
+  if (
+    shouldLogAllGets() &&
+    (method === "GET" || method === "HEAD") &&
+    urlPath !== "/api/health"
+  ) {
+    console.log(
+      `[access] ${JSON.stringify({ t: new Date().toISOString(), method, path: urlPath })}`
+    );
+  }
+
+  if (urlPath === "/api/usage" && (method === "GET" || method === "HEAD")) {
+    res.writeHead(200, {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+    });
+    res.end(
+      JSON.stringify({
+        pageViewsSinceBoot: usagePageViews,
+        machineId: process.env.FLY_MACHINE_ID || null,
+        region: process.env.FLY_REGION || null,
+        note:
+          "Solo cuenta cargas exitosas de / o /settings/midi (GET). Cada máquina en Fly tiene su contador; no son usuarios únicos.",
+      })
+    );
+    return;
+  }
+
+  if (urlPath === "/api/health" && (method === "GET" || method === "HEAD")) {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(
       JSON.stringify({
         ok: true,
@@ -50,7 +102,6 @@ function handleRequest(req, res) {
     return;
   }
 
-  const urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
   let filePath;
   if (urlPath === "/") {
     filePath = path.join(ROOT, "index.html");
@@ -70,6 +121,18 @@ function handleRequest(req, res) {
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("Not found");
       return;
+    }
+    if (method === "GET" && isCountedPagePath(urlPath)) {
+      usagePageViews += 1;
+      if (shouldLogPageViewsOnly()) {
+        console.log(
+          `[access] ${JSON.stringify({
+            t: new Date().toISOString(),
+            event: "page_view",
+            path: urlPath,
+          })}`
+        );
+      }
     }
     const ext = path.extname(filePath).toLowerCase();
     const type = MIME[ext] || "application/octet-stream";
@@ -103,8 +166,18 @@ function listenOnPort(port, triesLeft) {
     console.log(
       `Práctica de audio → http://${LISTEN_HOST === "0.0.0.0" ? "localhost" : LISTEN_HOST}:${port}/`
     );
-    console.log(`Estado (API) → /api/health`);
+    console.log(`Estado (API) → /api/health y /api/usage`);
   });
 }
 
 listenOnPort(PREFERRED_PORT, MAX_PORT_TRIES);
+
+/*
+ * Uso / privacidad (métricas muy básicas):
+ * - GET https://tu-dominio/api/usage → contador en memoria desde el arranque de ESTA
+ *   instancia (en Fly suele haber 2+ máquinas: suma mental o mira logs).
+ * - ACCESS_LOG=1 → una línea JSON en consola por cada vista de / o /settings/midi (200).
+ * - ACCESS_LOG=all → una línea por cada GET (excepto /api/health); más ruido.
+ * - No hay usuarios únicos ni IPs guardadas aquí; para eso hace falta analytics (p. ej. Plausible).
+ * - Panel Fly: métricas y ancho de banda en https://fly.io/apps/<app>/metrics
+ */
