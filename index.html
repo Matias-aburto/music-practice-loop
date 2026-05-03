@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Práctica de audio</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- WaveSurfer v6 UMD (works when opening index.html via file:// or http://) -->
+  <script src="https://cdn.jsdelivr.net/npm/wavesurfer.js@6.6.4/dist/wavesurfer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/wavesurfer.js@6.6.4/dist/plugin/wavesurfer.regions.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/wavesurfer.js@6.6.4/dist/plugin/wavesurfer.timeline.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="header header-app">
+      <div class="header-titles">
+        <h1>Práctica de audio</h1>
+      </div>
+      <div class="header-actions">
+        <label class="btn btn-compact btn-load-file" title="Elegir archivo de audio" aria-label="Cargar archivo de audio">
+          <svg class="btn-load-file-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+            <path
+              fill="currentColor"
+              d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"
+            />
+          </svg>
+          <span>Cargar archivo</span>
+          <input
+            type="file"
+            id="file-input"
+            class="sr-only"
+            accept="audio/mpeg,audio/wav,audio/ogg,audio/*,.mp3,.wav,.ogg"
+          />
+        </label>
+        <a
+          href="/settings/midi"
+          class="btn btn-settings"
+          title="Ajustes MIDI"
+        >
+          <svg class="btn-settings-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+            <path
+              fill="currentColor"
+              d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.488.488 0 0 0 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.13-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"
+            />
+          </svg>
+          <span class="sr-only">Ajustes MIDI</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="layout">
+    <section
+      class="panel waveform-panel waveform-panel-primary"
+      id="waveform-panel-main"
+      aria-busy="true"
+    >
+      <div
+        id="session-restore-skeleton"
+        class="session-restore-skeleton"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <span class="sr-only">Cargando la sesión: si habías abierto un archivo, se restaurará ahora.</span>
+        <div class="session-restore-skeleton-inner">
+          <div class="sk-row sk-transport">
+            <div class="sk-circle sk-shimmer"></div>
+            <div class="sk-bar sk-bar--grow sk-shimmer"></div>
+            <div class="sk-bar sk-bar--narrow sk-shimmer"></div>
+          </div>
+          <div class="sk-line sk-hint sk-shimmer"></div>
+          <div class="sk-line sk-timeline sk-shimmer"></div>
+          <div class="sk-wave" aria-hidden="true">
+            <div class="sk-line sk-wave-bar sk-shimmer" style="--sk-w: 94%"></div>
+            <div class="sk-line sk-wave-bar sk-shimmer" style="--sk-w: 88%"></div>
+            <div class="sk-line sk-wave-bar sk-shimmer" style="--sk-w: 91%"></div>
+            <div class="sk-line sk-wave-bar sk-shimmer" style="--sk-w: 76%"></div>
+            <div class="sk-line sk-wave-bar sk-shimmer" style="--sk-w: 85%"></div>
+            <div class="sk-line sk-wave-bar sk-shimmer" style="--sk-w: 70%"></div>
+            <div class="sk-line sk-wave-bar sk-shimmer" style="--sk-w: 82%"></div>
+          </div>
+          <div class="sk-toolbar" aria-hidden="true">
+            <div class="sk-line sk-tool sk-shimmer"></div>
+            <div class="sk-line sk-tool sk-shimmer sk-tool--short"></div>
+          </div>
+        </div>
+      </div>
+      <div class="waveform-transport row" aria-label="Reproducción">
+        <button
+          type="button"
+          id="btn-play"
+          class="btn btn-primary btn-play"
+          disabled
+          aria-label="Reproducir"
+        >
+          <span class="btn-play-icons" aria-hidden="true">
+            <svg class="play-icon" viewBox="0 0 24 24" width="22" height="22" focusable="false">
+              <path
+                fill="currentColor"
+                d="M8 5.14v13.72c0 .89 1.08 1.34 1.71.71l8.16-6.86a1 1 0 0 0 0-1.52L9.71 4.43C9.08 3.8 8 4.25 8 5.14Z"
+              />
+            </svg>
+            <svg class="pause-icon" viewBox="0 0 24 24" width="22" height="22" focusable="false">
+              <rect x="5" y="4" width="5" height="16" rx="1.2" fill="currentColor" />
+              <rect x="14" y="4" width="5" height="16" rx="1.2" fill="currentColor" />
+            </svg>
+          </span>
+        </button>
+        <div id="file-name" class="transport-file-name muted" title="">Ningún archivo cargado</div>
+        <div class="waveform-transport-trailing">
+          <button
+            type="button"
+            id="loop-active-indicator"
+            class="loop-on-badge loop-on-badge--inline"
+            hidden
+            disabled
+          >
+            <svg class="loop-on-icon" viewBox="0 0 24 24" width="16" height="16" focusable="false" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"
+              />
+            </svg>
+            <span class="loop-on-text"></span>
+          </button>
+          <div
+            id="loop-interval-readout"
+            class="loop-interval-readout transport-time-display time-display"
+            hidden
+            aria-live="polite"
+            aria-label="Inicio y fin del tramo de bucle"
+          >
+            <span id="loop-interval-start">00:00</span><span class="time-sep">/</span><span id="loop-interval-end">00:00</span>
+          </div>
+          <div class="transport-time-display time-display" aria-label="Tiempo de reproducción">
+            <span id="time-current">00:00</span><span class="time-sep">/</span><span id="time-total">00:00</span>
+          </div>
+        </div>
+      </div>
+      <div id="engine-hint" class="engine-hint muted transport-engine-hint" aria-live="polite"></div>
+      <div class="waveform-stack">
+        <div class="waveform-timeline-bar">
+          <div id="waveform-timeline" class="waveform-timeline" aria-label="Escala de tiempo (segundos)"></div>
+        </div>
+        <div id="waveform" class="waveform" aria-label="Forma de onda"></div>
+      </div>
+      <div class="waveform-controls-toolbar row" aria-label="Zoom, velocidad y vista de la onda">
+        <span class="toolbar-group toolbar-group-zoom">
+          <span class="zoom-toolbar-label muted small">Zoom</span>
+          <button type="button" id="btn-zoom-out" class="btn btn-compact" disabled title="Alejar" aria-label="Alejar zoom">−</button>
+          <input
+            type="range"
+            id="zoom-slider"
+            class="zoom-slider"
+            min="12"
+            max="480"
+            step="4"
+            value="12"
+            disabled
+            aria-valuemin="12"
+            aria-valuemax="480"
+            aria-label="Zoom del waveform en píxeles por segundo"
+          />
+          <button type="button" id="btn-zoom-in" class="btn btn-compact" disabled title="Acercar (+)" aria-label="Acercar zoom">+</button>
+        </span>
+        <span class="toolbar-group toolbar-group-speed">
+          <span class="zoom-toolbar-label muted small">Velocidad</span>
+          <span class="speed-toolbar-row">
+            <div
+              class="speed-knob-block"
+              title="Velocidad en porcentaje (50–150%). Coincide con el control MIDI de velocidad."
+            >
+              <div class="speed-knob" id="speed-knob">
+                <span id="speed-knob-label" class="sr-only">Velocidad en porcentaje</span>
+                <div class="speed-knob-visual" aria-hidden="true">
+                  <span class="speed-knob-body"></span>
+                  <span class="speed-knob-indicator" id="speed-knob-indicator"></span>
+                </div>
+                <input
+                  type="range"
+                  id="speed-knob-input"
+                  class="speed-knob-input"
+                  min="50"
+                  max="150"
+                  step="1"
+                  value="100"
+                  disabled
+                  aria-labelledby="speed-knob-label"
+                  aria-valuemin="50"
+                  aria-valuemax="150"
+                  aria-valuenow="100"
+                />
+                <span class="speed-knob-readout" id="speed-knob-readout" aria-hidden="true">100%</span>
+              </div>
+            </div>
+          </span>
+        </span>
+        <label class="follow-playhead-label muted small" title="Si está activo, el scroll se mueve para mantener el cursor centrado mientras suena.">
+          <input type="checkbox" id="chk-follow-playhead" disabled aria-label="Seguir cursor al reproducir" />
+          Seguir cursor
+        </label>
+      </div>
+    </section>
+
+    <div class="layout-columns">
+    <aside class="layout-aside">
+    <section class="panel loop-panel">
+      <h2>Bucles guardados</h2>
+      <div class="loop-presets row">
+        <label class="preset-label">
+          Nombre (opcional)
+          <input
+            type="text"
+            id="loop-preset-label"
+            class="preset-name-input"
+            placeholder="p. ej. Coro"
+            disabled
+            maxlength="80"
+            autocomplete="off"
+          />
+        </label>
+        <button type="button" id="btn-save-loop" class="btn" disabled>Guardar bucle actual</button>
+      </div>
+      <div class="saved-loops-wrap">
+        <p id="saved-loops-empty" class="muted small saved-loops-empty" hidden>
+          No hay bucles guardados para esta pista.
+        </p>
+        <ul id="saved-loops-list" class="saved-loops-list" aria-label="Lista de bucles guardados"></ul>
+      </div>
+      <div id="loop-status" class="loop-status muted"></div>
+    </section>
+    </aside>
+    </div>
+    </div>
+
+  </div>
+
+  <dialog id="midi-learn-dialog" class="modal-dialog" aria-labelledby="midi-learn-title">
+    <div class="modal-card">
+      <h3 id="midi-learn-title" class="modal-title">Asignar control MIDI</h3>
+      <p id="midi-learn-body" class="modal-body muted small"></p>
+      <p id="midi-learn-hint" class="midi-learn-hint muted small" aria-live="polite">
+        Esperando señal MIDI…
+      </p>
+      <div class="modal-actions row">
+        <button type="button" id="btn-midi-learn-cancel" class="btn btn-compact">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

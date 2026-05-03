@@ -1,0 +1,8 @@
+{
+  "name": "music-practice",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js"
+  }
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ajustes MIDI — Práctica de audio</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="app settings-midi-app">
+    <header class="header header-app settings-midi-header">
+      <div class="header-titles">
+        <h1>Ajustes MIDI</h1>
+        <p class="tagline">Atajos del teclado/controlador USB y transporte global.</p>
+      </div>
+      <div class="header-actions">
+        <a href="/" class="btn btn-compact">Volver a la app</a>
+      </div>
+    </header>
+
+    <main class="settings-midi-main panel">
+      <p class="muted small">
+        Requiere Chrome o Edge y un origen seguro (<code>http://localhost</code> con <code>npm start</code>).
+        Las asignaciones se guardan en este navegador; la página de práctica las usa al instante.
+      </p>
+
+      <label class="switch-label">
+        <input type="checkbox" id="chk-advanced" class="switch-input" aria-describedby="advanced-hint" />
+        <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        <span class="switch-text">Activar atajos MIDI</span>
+      </label>
+      <p id="advanced-hint" class="sr-only">
+        Al activar, en la app principal cada bucle puede usar «Aprender MIDI»; aquí configuras play/pausa y velocidad.
+      </p>
+
+      <div id="advanced-content" class="advanced-content" hidden>
+        <div class="advanced-midi-block">
+          <h2 class="advanced-subtitle">Control MIDI</h2>
+          <p class="muted small">
+            «Buscar teclado MIDI» autoriza al navegador. Los bucles se asignan en la lista de la app principal con «Aprender MIDI».
+          </p>
+          <p id="midi-status" class="midi-status muted small" role="status" aria-live="polite"></p>
+          <div class="advanced-midi-actions row">
+            <button type="button" id="btn-midi-scan" class="btn btn-compact" disabled>Buscar teclado MIDI</button>
+          </div>
+          <p class="hint muted small midi-troubleshoot">
+            El número o nota tiene que venir del <strong>teclado MIDI por USB</strong> (p. ej. Akai), no de la tecla <kbd>1</kbd> del ordenador. Si no hay «entradas» en el navegador, cierra Guitar Rig y otras apps MIDI.
+          </p>
+
+          <div id="midi-global-assign-menu" class="midi-assign-menu" aria-label="Asignación MIDI global">
+            <h3 class="advanced-subtitle midi-assign-menu-title">Asignación MIDI (transporte y velocidad)</h3>
+            <p class="muted small">Controles globales en la vista de práctica.</p>
+            <ul class="midi-action-list" role="list">
+              <li class="midi-action-row">
+                <div class="midi-action-meta">
+                  <span class="midi-action-name">Reproducir / Pausa</span>
+                  <span class="midi-action-binding muted small" data-midi-binding-label="playPause"></span>
+                </div>
+                <div class="midi-action-buttons row">
+                  <button type="button" class="btn btn-compact" data-midi-learn-global="playPause" disabled>Aprender…</button>
+                  <button type="button" class="btn btn-compact" data-midi-clear-global="playPause" disabled>Quitar</button>
+                </div>
+              </li>
+              <li class="midi-action-row">
+                <div class="midi-action-meta">
+                  <span class="midi-action-name">Velocidad continua (knob %)</span>
+                  <span class="midi-action-binding muted small" data-midi-binding-label="speedPercentKnob"></span>
+                </div>
+                <div class="midi-action-buttons row">
+                  <button type="button" class="btn btn-compact" data-midi-learn-global="speedPercentKnob" disabled>Aprender…</button>
+                  <button type="button" class="btn btn-compact" data-midi-clear-global="speedPercentKnob" disabled>Quitar</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="midi-learn-dialog" class="modal-dialog" aria-labelledby="midi-learn-title">
+    <div class="modal-card">
+      <h3 id="midi-learn-title" class="modal-title">Asignar control MIDI</h3>
+      <p id="midi-learn-body" class="modal-body muted small"></p>
+      <p id="midi-learn-hint" class="midi-learn-hint muted small" aria-live="polite">
+        Esperando señal MIDI…
+      </p>
+      <div class="modal-actions row">
+        <button type="button" id="btn-midi-learn-cancel" class="btn btn-compact">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="/midi-settings-page.js"></script>
+</body>
+</html>
