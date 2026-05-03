@@ -1,0 +1,18 @@
+# Renombra `app` si creas la app en Fly con otro nombre (`fly apps create`).
+app = "music-practice-loop"
+primary_region = "cdg"
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

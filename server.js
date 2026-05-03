@@ -13,7 +13,11 @@ const fs = require("fs");
 const path = require("path");
 
 const PREFERRED_PORT = Number(process.env.PORT) || 3333;
-const MAX_PORT_TRIES = 40;
+/** En Fly.io y similares no conviene saltar de puerto: el proxy espera el PORT inyectado. */
+const IS_CONTAINER =
+  Boolean(process.env.FLY_APP_NAME) || Boolean(process.env.K_SERVICE);
+const MAX_PORT_TRIES = IS_CONTAINER ? 1 : 40;
+const LISTEN_HOST = process.env.LISTEN_HOST || "0.0.0.0";
 const ROOT = __dirname;
 
 const MIME = {
@@ -90,14 +94,16 @@ function listenOnPort(port, triesLeft) {
     process.exit(1);
   });
 
-  server.listen(port, () => {
-    if (port !== PREFERRED_PORT) {
+  server.listen(port, LISTEN_HOST, () => {
+    if (port !== PREFERRED_PORT && !IS_CONTAINER) {
       console.warn(
         `[server] Usando puerto ${port} porque ${PREFERRED_PORT} estaba ocupado.`
       );
     }
-    console.log(`Práctica de audio → http://localhost:${port}/`);
-    console.log(`Estado (API) → http://localhost:${port}/api/health`);
+    console.log(
+      `Práctica de audio → http://${LISTEN_HOST === "0.0.0.0" ? "localhost" : LISTEN_HOST}:${port}/`
+    );
+    console.log(`Estado (API) → /api/health`);
   });
 }
 
