@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Práctica de audio</title>
+  <title>Inverno - Práctica musical</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
   <!-- WaveSurfer v6 UMD (works when opening index.html via file:// or http://) -->
   <script src="https://cdn.jsdelivr.net/npm/wavesurfer.js@6.6.4/dist/wavesurfer.min.js"></script>
@@ -14,7 +23,21 @@
   <div class="app">
     <header class="header header-app">
       <div class="header-titles">
-        <h1>Práctica de audio</h1>
+        <picture class="app-logo-wrap">
+          <source srcset="/assets/logo.svg" type="image/svg+xml" />
+          <img
+            src="/assets/logo.png"
+            alt=""
+            class="app-logo"
+            width="120"
+            height="40"
+            decoding="async"
+          />
+        </picture>
+        <div class="header-titles-text">
+          <h1>Inverno</h1>
+          <p class="tagline app-tagline">Práctica musical</p>
+        </div>
       </div>
       <div class="header-actions">
         <label class="btn btn-compact btn-load-file" title="Elegir archivo de audio" aria-label="Cargar archivo de audio">
@@ -61,7 +84,7 @@
         aria-live="polite"
         aria-busy="true"
       >
-        <span class="sr-only">Cargando la sesión: si habías abierto un archivo, se restaurará ahora.</span>
+        <span class="sr-only">Cargando Inverno: si habías abierto un archivo, se restaurará ahora.</span>
         <div class="session-restore-skeleton-inner">
           <div class="sk-row sk-transport">
             <div class="sk-circle sk-shimmer"></div>
@@ -233,6 +256,22 @@
     </div>
     </div>
 
+    <footer class="app-footer" role="contentinfo">
+      <p class="app-footer-inner">
+        Made by
+        <a
+          href="https://simetry.cl/"
+          class="app-footer-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Simetry<svg class="app-footer-note-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            fill="currentColor"
+            d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"
+          />
+        </svg></a>
+      </p>
+    </footer>
   </div>
 
   <dialog id="midi-learn-dialog" class="modal-dialog" aria-labelledby="midi-learn-title">

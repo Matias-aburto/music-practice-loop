@@ -20,7 +20,7 @@
   --loop-highlight-glow: rgba(52, 211, 168, 0.2);
   --danger: #c75c5c;
   --radius: 10px;
-  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font: "Poppins", system-ui, -apple-system, sans-serif;
   --app-pad: clamp(12px, 2.5vw, 28px);
 }
 
@@ -43,6 +43,39 @@ body {
   margin: 0 auto;
   padding: 1.25rem var(--app-pad) 2.5rem;
   box-sizing: border-box;
+}
+
+.app-footer {
+  margin-top: 1.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.app-footer-inner {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.app-footer-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-footer-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.app-footer-note-icon {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  margin-left: 0.22em;
+  vertical-align: -0.14em;
 }
 
 .layout {
@@ -302,6 +335,19 @@ body {
   font-size: 0.95rem;
 }
 
+/** Tagline principal (Inverno): más pequeño que el de la página de ajustes MIDI. */
+.app-tagline {
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  margin-top: 0.1rem;
+}
+
+.header-app .header-titles-text h1 {
+  margin-bottom: 0.08rem;
+}
+
 /* --- Header + settings (floating shortcuts) --- */
 .header-app {
   display: flex;
@@ -314,6 +360,27 @@ body {
 .header-titles {
   min-width: 0;
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.header-titles-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.app-logo-wrap {
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.app-logo {
+  display: block;
+  height: 2.5rem;
+  width: auto;
+  max-width: 9rem;
+  object-fit: contain;
 }
 
 .header-actions {

@@ -1,5 +1,5 @@
-# Renombra `app` si creas la app en Fly con otro nombre (`fly apps create`).
-app = "music-practice-loop"
+# Nombre de la app en Fly = subdominio https://<app>.fly.dev
+app = "inverno"
 primary_region = "cdg"
 
 [build]
