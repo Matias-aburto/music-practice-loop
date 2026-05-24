@@ -102,7 +102,7 @@ function listenOnPort(port, triesLeft) {
       );
     }
     console.log(
-      `Práctica de audio → http://${LISTEN_HOST === "0.0.0.0" ? "localhost" : LISTEN_HOST}:${port}/`
+      `Inverno → http://${LISTEN_HOST === "0.0.0.0" ? "localhost" : LISTEN_HOST}:${port}/`
     );
     console.log(`Estado (API) → /api/health`);
   });

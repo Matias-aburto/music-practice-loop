@@ -1,5 +1,5 @@
 /**
- * Práctica de audio — herramienta de estudio en el navegador
+ * Inverno — herramienta de estudio en el navegador
  * ------------------------------------------------------------
  * Secciones: config y DOM → utilidades → motores de reproducción → bucles y regiones → arranque
  */
@@ -352,7 +352,7 @@ function createWavesurfer(backend) {
         unlabeledNotchColor: "rgba(220, 228, 245, 0.12)",
         primaryFontColor: "#e8ecf4",
         secondaryFontColor: "#a8b4c8",
-        fontFamily: "Segoe UI, system-ui, sans-serif",
+        fontFamily: "Poppins, system-ui, sans-serif",
         fontSize: 12,
         labelPadding: 6,
         formatTimeCallback: (sec, px) => timelineFormatAdaptive(sec, px),
@@ -1308,7 +1308,11 @@ function getPresetsForCurrentFile() {
   return Array.isArray(list) ? list : [];
 }
 
-function saveCurrentLoopPreset() {
+function formatLoopPresetTimeLabel(start, end) {
+  return `${formatTime(start)} → ${formatTime(end)}`;
+}
+
+function saveCurrentLoopPreset(options = {}) {
   const key = getFileKey(state.currentFile);
   if (!key || !state.duration) return;
 
@@ -1323,11 +1327,16 @@ function saveCurrentLoopPreset() {
     return;
   }
 
-  let label = el.loopPresetLabel.value.trim();
-  if (!label) {
-    label = t("loop.defaultName", {
-      n: getPresetsForCurrentFile().length + 1,
-    });
+  let label;
+  if (options.labelFromTimes) {
+    label = formatLoopPresetTimeLabel(start, end);
+  } else {
+    label = el.loopPresetLabel.value.trim();
+    if (!label) {
+      label = t("loop.defaultName", {
+        n: getPresetsForCurrentFile().length + 1,
+      });
+    }
   }
 
   const id =
@@ -1872,8 +1881,31 @@ function isSpaceReservedForTypingOrToggle(target) {
 }
 
 function onKeyDown(e) {
-  if (e.code !== "Space") return;
   if (el.midiLearnDialog && el.midiLearnDialog.open) return;
+
+  if (
+    e.code === "KeyS" &&
+    e.shiftKey &&
+    !e.ctrlKey &&
+    !e.altKey &&
+    !e.metaKey
+  ) {
+    e.preventDefault();
+    if (!state.wavesurfer || !state.currentFile) return;
+    saveCurrentLoopPreset({ labelFromTimes: true });
+    return;
+  }
+
+  if (e.code !== "Space") return;
+
+  /** Con bucle activo: Ctrl+Espacio = play/pausa (Espacio solo reinicia el tramo). */
+  if (e.ctrlKey && state.loopEnabled) {
+    e.preventDefault();
+    if (!state.wavesurfer) return;
+    togglePlayPause().catch((err) => console.error(err));
+    return;
+  }
+
   if (isSpaceReservedForTypingOrToggle(e.target)) return;
 
   e.preventDefault();
