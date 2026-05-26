@@ -47,7 +47,7 @@
         <span class="switch-text">Activar atajos MIDI</span>
       </label>
       <p id="advanced-hint" class="sr-only">
-        Al activar, en Inverno cada bucle puede usar «Aprender MIDI»; aquí configuras play/pausa y velocidad.
+        Al activar, en Inverno cada bucle puede usar «Aprender MIDI»; aquí configuras play/pausa, velocidad y volumen.
       </p>
 
       <div id="advanced-content" class="advanced-content" hidden>
@@ -65,7 +65,7 @@
           </p>
 
           <div id="midi-global-assign-menu" class="midi-assign-menu" aria-label="Asignación MIDI global">
-            <h3 class="advanced-subtitle midi-assign-menu-title">Asignación MIDI (transporte y velocidad)</h3>
+            <h3 class="advanced-subtitle midi-assign-menu-title">Asignación MIDI (transporte, velocidad y volumen)</h3>
             <p class="muted small">Controles globales en Inverno.</p>
             <ul class="midi-action-list" role="list">
               <li class="midi-action-row">
@@ -86,6 +86,16 @@
                 <div class="midi-action-buttons row">
                   <button type="button" class="btn btn-compact" data-midi-learn-global="speedPercentKnob" disabled>Aprender…</button>
                   <button type="button" class="btn btn-compact" data-midi-clear-global="speedPercentKnob" disabled>Quitar</button>
+                </div>
+              </li>
+              <li class="midi-action-row">
+                <div class="midi-action-meta">
+                  <span class="midi-action-name">Volumen continuo (knob %)</span>
+                  <span class="midi-action-binding muted small" data-midi-binding-label="volumePercentKnob"></span>
+                </div>
+                <div class="midi-action-buttons row">
+                  <button type="button" class="btn btn-compact" data-midi-learn-global="volumePercentKnob" disabled>Aprender…</button>
+                  <button type="button" class="btn btn-compact" data-midi-clear-global="volumePercentKnob" disabled>Quitar</button>
                 </div>
               </li>
             </ul>

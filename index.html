@@ -167,7 +167,7 @@
         </div>
         <div id="waveform" class="waveform" aria-label="Forma de onda"></div>
       </div>
-      <div class="waveform-controls-toolbar row" aria-label="Zoom, velocidad y vista de la onda">
+      <div class="waveform-controls-toolbar row" aria-label="Zoom, velocidad, volumen y vista de la onda">
         <span class="toolbar-group toolbar-group-zoom">
           <span class="zoom-toolbar-label muted small">Zoom</span>
           <button type="button" id="btn-zoom-out" class="btn btn-compact" disabled title="Alejar" aria-label="Alejar zoom">−</button>
@@ -214,6 +214,36 @@
                   aria-valuenow="100"
                 />
                 <span class="speed-knob-readout" id="speed-knob-readout" aria-hidden="true">100%</span>
+              </div>
+            </div>
+          </span>
+          <span class="zoom-toolbar-label muted small">Volumen</span>
+          <span class="speed-toolbar-row">
+            <div
+              class="volume-knob-block"
+              title="Volumen en porcentaje (0–100%). Coincide con el control MIDI de volumen."
+            >
+              <div class="volume-knob" id="volume-knob">
+                <span id="volume-knob-label" class="sr-only">Volumen en porcentaje</span>
+                <div class="volume-knob-visual" aria-hidden="true">
+                  <span class="volume-knob-body"></span>
+                  <span class="volume-knob-indicator" id="volume-knob-indicator"></span>
+                </div>
+                <input
+                  type="range"
+                  id="volume-knob-input"
+                  class="volume-knob-input"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="100"
+                  disabled
+                  aria-labelledby="volume-knob-label"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="100"
+                />
+                <span class="volume-knob-readout" id="volume-knob-readout" aria-hidden="true">100%</span>
               </div>
             </div>
           </span>
