@@ -8,6 +8,14 @@ export const MIDI_GLOBAL_BINDINGS_KEY = "music-practice-midi-global-v1";
 
 export const MIDI_GLOBAL_ACTION_PLAY_PAUSE = "playPause";
 export const MIDI_GLOBAL_ACTION_SPEED_PERCENT_KNOB = "speedPercentKnob";
+export const MIDI_GLOBAL_ACTION_VOLUME_PERCENT_KNOB = "volumePercentKnob";
+
+export function isContinuousCcMidiAction(actionId) {
+  return (
+    actionId === MIDI_GLOBAL_ACTION_SPEED_PERCENT_KNOB ||
+    actionId === MIDI_GLOBAL_ACTION_VOLUME_PERCENT_KNOB
+  );
+}
 
 export function midiNoteBindingKey(channel, note) {
   return `n-${channel}-${note}`;
@@ -37,6 +45,9 @@ export function formatGlobalMidiActionLabel(actionId) {
   if (actionId === MIDI_GLOBAL_ACTION_PLAY_PAUSE) return "Reproducir / Pausa";
   if (actionId === MIDI_GLOBAL_ACTION_SPEED_PERCENT_KNOB) {
     return "Velocidad continua (knob %)";
+  }
+  if (actionId === MIDI_GLOBAL_ACTION_VOLUME_PERCENT_KNOB) {
+    return "Volumen continuo (knob %)";
   }
   return actionId;
 }

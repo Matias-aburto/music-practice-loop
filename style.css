@@ -1234,8 +1234,9 @@ body.app-file-drag-over::after {
   gap: 0.65rem 0.85rem;
 }
 
-/* Knob de velocidad (estilo plugin / DAW) */
-.speed-knob-block {
+/* Knobs de velocidad y volumen (estilo plugin / DAW) */
+.speed-knob-block,
+.volume-knob-block {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -1243,14 +1244,16 @@ body.app-file-drag-over::after {
   gap: 0.2rem;
 }
 
-.speed-knob {
+.speed-knob,
+.volume-knob {
   position: relative;
   width: 3.25rem;
   height: 3.25rem;
   flex-shrink: 0;
 }
 
-.speed-knob-visual {
+.speed-knob-visual,
+.volume-knob-visual {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -1261,7 +1264,8 @@ body.app-file-drag-over::after {
     0 1px 0 rgb(255 255 255 / 0.06) inset;
 }
 
-.speed-knob-body {
+.speed-knob-body,
+.volume-knob-body {
   position: absolute;
   inset: 0;
   border-radius: 50%;
@@ -1276,7 +1280,8 @@ body.app-file-drag-over::after {
   border: 1px solid var(--border);
 }
 
-.speed-knob-indicator {
+.speed-knob-indicator,
+.volume-knob-indicator {
   --knob-deg: 0deg;
   position: absolute;
   left: 50%;
@@ -1291,7 +1296,13 @@ body.app-file-drag-over::after {
   transform: translateY(1px) rotate(var(--knob-deg));
 }
 
-.speed-knob-input {
+.volume-knob-indicator {
+  background: linear-gradient(180deg, #e8c07e 0%, #d4a054 45%, #966f3d 100%);
+  box-shadow: 0 0 6px rgb(212 160 84 / 0.35);
+}
+
+.speed-knob-input,
+.volume-knob-input {
   position: absolute;
   inset: -0.35rem;
   width: calc(100% + 0.7rem);
@@ -1303,11 +1314,13 @@ body.app-file-drag-over::after {
   -webkit-tap-highlight-color: transparent;
 }
 
-.speed-knob-input:disabled {
+.speed-knob-input:disabled,
+.volume-knob-input:disabled {
   cursor: not-allowed;
 }
 
-.speed-knob-readout {
+.speed-knob-readout,
+.volume-knob-readout {
   position: absolute;
   left: 50%;
   bottom: -1.05rem;
@@ -1322,7 +1335,8 @@ body.app-file-drag-over::after {
   z-index: 1;
 }
 
-.speed-knob-block .speed-knob {
+.speed-knob-block .speed-knob,
+.volume-knob-block .volume-knob {
   margin-bottom: 0.85rem;
 }
 

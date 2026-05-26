@@ -8,6 +8,7 @@ import {
   ADVANCED_UI_STORAGE_KEY,
   MIDI_GLOBAL_ACTION_PLAY_PAUSE,
   MIDI_GLOBAL_ACTION_SPEED_PERCENT_KNOB,
+  MIDI_GLOBAL_ACTION_VOLUME_PERCENT_KNOB,
   formatMidiBindingLabel,
   midiNoteBindingKey,
   midiCcBindingKey,
@@ -92,6 +93,10 @@ const MIN_PRESET_LOOP_SECONDS = 0.08;
 const MIDI_SPEED_PERCENT_MIN = 50;
 const MIDI_SPEED_PERCENT_MAX = 150;
 
+/** Rango de volumen para control continuo MIDI (%). */
+const MIDI_VOLUME_PERCENT_MIN = 0;
+const MIDI_VOLUME_PERCENT_MAX = 100;
+
 /**
  * True while `refreshLoopRegion` is adding a region so we do not clear the active preset id.
  * @type {boolean}
@@ -125,6 +130,9 @@ const el = {
   speedKnobInput: document.getElementById("speed-knob-input"),
   speedKnobIndicator: document.getElementById("speed-knob-indicator"),
   speedKnobReadout: document.getElementById("speed-knob-readout"),
+  volumeKnobInput: document.getElementById("volume-knob-input"),
+  volumeKnobIndicator: document.getElementById("volume-knob-indicator"),
+  volumeKnobReadout: document.getElementById("volume-knob-readout"),
   loopStatus: document.getElementById("loop-status"),
   loopPresetLabel: document.getElementById("loop-preset-label"),
   btnSaveLoop: document.getElementById("btn-save-loop"),
@@ -159,6 +167,10 @@ const state = {
   loopEnabled: false,
   /** Playback speed factor (0.5 … 1.5) */
   speed: 1,
+  /** Output volume 0 … 1 */
+  volume: 1,
+  /** @type {GainNode|null} pitch path output gain */
+  gainNode: null,
   isPlaying: false,
   /** rAF handle for pitch-mode UI sync */
   rafId: 0,
@@ -454,6 +466,7 @@ function teardownPitchEngine() {
     }
     state.pitchShifter = null;
   }
+  state.gainNode = null;
   if (state.audioContext) {
     state.audioContext.close().catch(() => {});
     state.audioContext = null;
@@ -501,6 +514,9 @@ function setControlsEnabled(loaded) {
   el.chkFollowPlayhead.disabled = !loaded;
   if (el.speedKnobInput) {
     el.speedKnobInput.disabled = !loaded;
+  }
+  if (el.volumeKnobInput) {
+    el.volumeKnobInput.disabled = !loaded;
   }
 }
 
@@ -705,6 +721,45 @@ function updateSpeedKnobUI() {
   readout.textContent = `${pct}%`;
 
   const deg = speedPercentToKnobDeg(pct);
+  if (indicator) {
+    indicator.style.setProperty("--knob-deg", `${deg}deg`);
+  }
+}
+
+/**
+ * Porcentaje entero 0–100 alineado con el rango del CC MIDI de volumen.
+ * @param {number} volumeFactor
+ */
+function volumeFactorToMidiPercent(volumeFactor) {
+  const raw = Math.round(Number(volumeFactor) * 100);
+  return Math.min(
+    MIDI_VOLUME_PERCENT_MAX,
+    Math.max(MIDI_VOLUME_PERCENT_MIN, raw)
+  );
+}
+
+/**
+ * Ángulo del indicador del knob de volumen: arco ~270° (0–100%).
+ * @param {number} percentInt
+ */
+function volumePercentToKnobDeg(percentInt) {
+  const t = percentInt / MIDI_VOLUME_PERCENT_MAX;
+  return -135 + t * 270;
+}
+
+/** Sincroniza knob + texto con `state.volume` (arrastre, MIDI). */
+function updateVolumeKnobUI() {
+  const input = el.volumeKnobInput;
+  const readout = el.volumeKnobReadout;
+  const indicator = el.volumeKnobIndicator;
+  if (!input || !readout) return;
+
+  const pct = volumeFactorToMidiPercent(state.volume);
+  input.value = String(pct);
+  input.setAttribute("aria-valuenow", String(pct));
+  readout.textContent = `${pct}%`;
+
+  const deg = volumePercentToKnobDeg(pct);
   if (indicator) {
     indicator.style.setProperty("--knob-deg", `${deg}deg`);
   }
@@ -1014,6 +1069,18 @@ function applySpeed() {
   updateSpeedKnobUI();
 }
 
+function applyVolume() {
+  const v = Math.min(1, Math.max(0, Number(state.volume) || 0));
+  state.volume = v;
+  if (state.engine === "pitch" && state.gainNode) {
+    state.gainNode.gain.value = v;
+  }
+  if (state.wavesurfer && typeof state.wavesurfer.setVolume === "function") {
+    state.wavesurfer.setVolume(v);
+  }
+  updateVolumeKnobUI();
+}
+
 /**
  * Mapea valor CC 0..127 a porcentaje entero dentro del rango permitido.
  * Ej.: 100% = velocidad normal.
@@ -1023,6 +1090,15 @@ function midiCcToSpeedPercent(ccValue) {
   const pct =
     MIDI_SPEED_PERCENT_MIN +
     (v / 127) * (MIDI_SPEED_PERCENT_MAX - MIDI_SPEED_PERCENT_MIN);
+  return Math.round(pct);
+}
+
+/** Mapea CC 0..127 a volumen 0–100%. */
+function midiCcToVolumePercent(ccValue) {
+  const v = Math.min(127, Math.max(0, Number(ccValue) || 0));
+  const pct =
+    MIDI_VOLUME_PERCENT_MIN +
+    (v / 127) * (MIDI_VOLUME_PERCENT_MAX - MIDI_VOLUME_PERCENT_MIN);
   return Math.round(pct);
 }
 
@@ -1068,7 +1144,10 @@ async function loadPitchPathFromBuffer(audioBuffer, PitchShifter) {
     4096,
     onPitchNaturalEnd
   );
-  state.pitchShifter.node.connect(state.audioContext.destination);
+  state.gainNode = state.audioContext.createGain();
+  state.gainNode.gain.value = state.volume;
+  state.pitchShifter.node.connect(state.gainNode);
+  state.gainNode.connect(state.audioContext.destination);
   state.pitchShifter.tempo = state.speed;
   state.pitchShifter.rate = 1;
 
@@ -1093,6 +1172,7 @@ async function loadPitchPathFromBuffer(audioBuffer, PitchShifter) {
   wireWavesurferSeekSync();
   attachRegionHandlers();
   refreshLoopRegion();
+  applyVolume();
 }
 
 /**
@@ -1130,6 +1210,7 @@ async function loadSimplePath(file) {
   state.loopStart = 0;
   state.loopEnd = state.duration;
   state.wavesurfer.setPlaybackRate(state.speed);
+  applyVolume();
 
   setEngineHint("");
 
@@ -1222,6 +1303,7 @@ async function loadFile(file) {
   setControlsEnabled(true);
   updateTimeLabels(0, state.duration);
   updateSpeedKnobUI();
+  updateVolumeKnobUI();
   state.isPlaying = false;
   updatePlayButtonLabel();
   state.activeSavedLoopId = null;
@@ -1509,6 +1591,14 @@ function tryApplyGlobalMidiBinding(bKey, midiMessage = null) {
       const percent = midiCcToSpeedPercent(midiMessage.d2);
       state.speed = percent / 100;
       applySpeed();
+      return true;
+    }
+
+    if (action === MIDI_GLOBAL_ACTION_VOLUME_PERCENT_KNOB) {
+      if (!midiMessage || midiMessage.cmd !== 0xb0) return true;
+      const percent = midiCcToVolumePercent(midiMessage.d2);
+      state.volume = percent / 100;
+      applyVolume();
       return true;
     }
 
@@ -2017,6 +2107,20 @@ if (el.speedKnobInput) {
   });
 }
 
+if (el.volumeKnobInput) {
+  el.volumeKnobInput.addEventListener("input", () => {
+    if (el.volumeKnobInput.disabled) return;
+    const v = parseInt(el.volumeKnobInput.value, 10);
+    if (!Number.isFinite(v)) return;
+    const clamped = Math.min(
+      MIDI_VOLUME_PERCENT_MAX,
+      Math.max(MIDI_VOLUME_PERCENT_MIN, v)
+    );
+    state.volume = clamped / 100;
+    applyVolume();
+  });
+}
+
 el.loopActiveIndicator.addEventListener("click", () => {
   if (state.wavesurfer) toggleLoop();
 });
@@ -2070,6 +2174,7 @@ updateLoopActiveIndicator();
 updateLoopIntervalReadout();
 updateZoomUI(ZOOM_DEFAULT);
 updateSpeedKnobUI();
+updateVolumeKnobUI();
 renderSavedLoopsList();
 applyMidiAdvancedFromStorage();
 bootstrapSessionRestore().catch((err) => console.error(err));

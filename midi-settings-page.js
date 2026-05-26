@@ -1,6 +1,7 @@
 import {
   ADVANCED_UI_STORAGE_KEY,
-  MIDI_GLOBAL_ACTION_SPEED_PERCENT_KNOB,
+  MIDI_GLOBAL_ACTION_VOLUME_PERCENT_KNOB,
+  isContinuousCcMidiAction,
   formatGlobalMidiActionLabel,
   formatMidiBindingLabel,
   midiCcBindingKey,
@@ -220,7 +221,7 @@ function refreshMidiIdleHint() {
   elSt.classList.remove("is-ok", "is-err");
   elSt.classList.add("is-warn");
   elSt.textContent =
-    "Pulsa «Buscar teclado MIDI» para conectar. Luego usa «Aprender…» para reproducir / pausar o el knob de velocidad (CC).";
+    "Pulsa «Buscar teclado MIDI» para conectar. Luego usa «Aprender…» para reproducir / pausar o los knobs de velocidad y volumen (CC).";
 }
 
 function setAdvancedSectionVisible(on) {
@@ -258,16 +259,16 @@ function openMidiGlobalLearnDialog(actionId) {
     el.midiLearnTitle.textContent = `MIDI: ${formatGlobalMidiActionLabel(actionId)}`;
   }
   if (el.midiLearnBody) {
-    el.midiLearnBody.textContent =
-      actionId === MIDI_GLOBAL_ACTION_SPEED_PERCENT_KNOB
-        ? "Mueve un knob/fader (CC) para usar velocidad continua en porcentaje."
-        : "Pulsa el control de tu teclado MIDI (nota o CC) que quieras usar para esta acción.";
+    el.midiLearnBody.textContent = isContinuousCcMidiAction(actionId)
+      ? actionId === MIDI_GLOBAL_ACTION_VOLUME_PERCENT_KNOB
+        ? "Mueve un knob/fader (CC) para usar volumen continuo en porcentaje."
+        : "Mueve un knob/fader (CC) para usar velocidad continua en porcentaje."
+      : "Pulsa el control de tu teclado MIDI (nota o CC) que quieras usar para esta acción.";
   }
   if (el.midiLearnHint) {
-    el.midiLearnHint.textContent =
-      actionId === MIDI_GLOBAL_ACTION_SPEED_PERCENT_KNOB
-        ? "Esperando un mensaje CC de knob/fader…"
-        : "Pulsa una tecla, pad o mueve un knob…";
+    el.midiLearnHint.textContent = isContinuousCcMidiAction(actionId)
+      ? "Esperando un mensaje CC de knob/fader…"
+      : "Pulsa una tecla, pad o mueve un knob…";
   }
   midiLearnWaiting = true;
   dlg.showModal();
@@ -308,10 +309,12 @@ function handleMidiMessage(e, inputPort) {
     const isNoteOn = cmd === 0x90 && d2 > 0;
     const isCc = cmd === 0xb0 && d2 > 0;
 
-    if (actionId === MIDI_GLOBAL_ACTION_SPEED_PERCENT_KNOB && isNoteOn) {
+    if (isContinuousCcMidiAction(actionId) && isNoteOn) {
       if (el.midiLearnHint) {
         el.midiLearnHint.textContent =
-          "Para velocidad continua usa un knob/fader (CC), no una nota.";
+          actionId === MIDI_GLOBAL_ACTION_VOLUME_PERCENT_KNOB
+            ? "Para volumen continuo usa un knob/fader (CC), no una nota."
+            : "Para velocidad continua usa un knob/fader (CC), no una nota.";
       }
       continue;
     }
